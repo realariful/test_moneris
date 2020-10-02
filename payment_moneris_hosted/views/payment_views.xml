@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <record id="acquirer_form_moneris" model="ir.ui.view">
+            <field name="name">payment.acquirer.form.inherit.moneris.onsite</field>
+            <field name="model">payment.acquirer</field>
+            <field name="inherit_id" ref="payment.acquirer_form"/>
+            <field name="arch" type="xml">
+                <xpath expr='//group[@name="acquirer"]' position='inside'>
+                    <group attrs="{'invisible': [('provider', '!=', 'moneris')]}">
+                        <field name="moneris_transaction_type" readonly="True"/>
+                        <field name="moneris_psstore_id"/>
+                        <field name="moneris_hpp_key"/>
+                        <field name="moneris_use_ipn"/>
+                    </group>
+                    <!-- <group attrs="{'invisible': [('provider', '!=', 'moneris')]}">
+                        <field name="moneris_api_enabled" invisible="1"/>
+                        <field name="moneris_store_id"/>
+                        <field name="moneris_api_token"/>
+                    </group> -->
+                </xpath>
+                <xpath expr='//field[@name="journal_id"]' position='after'>
+                        <field name="moneris_order_confirmation" attrs="{'invisible': [('provider', '!=', 'moneris')]}" widget="radio"/>
+                        <field name="save_token" attrs="{'invisible': [('provider', '!=', 'moneris')]}" widget="radio" string="Store Card Data"/>
+                        <!-- <field name="moneris_store_card" attrs="{'invisible': [('provider', '!=', 'moneris')]}" widget="radio"/> -->
+                        <field name="moneris_image_url" attrs="{'invisible': [('provider', '!=', 'moneris')]}"/>
+                        <!-- <field name="moneris_payment_flow" attrs="{'invisible': [('provider', '!=', 'moneris')]}" widget="radio"/> -->
+                </xpath>
+            </field>
+        </record>
+
+        <record id="transaction_form_moneris" model="ir.ui.view">
+            <field name="name">acquirer.transaction.form.moneris</field>
+            <field name="model">payment.transaction</field>
+            <field name="inherit_id" ref="payment.transaction_form"/>
+            <field name="arch" type="xml">
+                <!-- <xpath expr="//field[@name='acquirer_reference']" position="after">
+                </xpath> -->
+                <xpath expr="//sheet" position="inside">
+                    <notebook>
+                        <page string="Moneris Details">
+                            <group>
+                                <group>
+                                    <field name="moneris_customer_id" attrs="{'invisible': [('provider', '!=', 'moneris')]}"/>
+                                    <field name="moneris_receipt_id" attrs="{'invisible': [('provider', '!=', 'moneris')]}"/>
+                                    <field name="moneris_response_code" attrs="{'invisible': [('provider', '!=', 'moneris')]}"/>
+                                    <field name="moneris_credit_card" attrs="{'invisible': [('provider', '!=', 'moneris')]}"/>
+                                    <field name="moneris_expiry_date" attrs="{'invisible': [('provider', '!=', 'moneris')]}"/>
+                                    <field name="moneris_txn_type" attrs="{'invisible': [('provider', '!=', 'moneris')]}"/>
+                                </group>
+                                <group>
+                                    <field name="moneris_transaction_time" attrs="{'invisible': [('provider', '!=', 'moneris')]}"/>
+                                    <field name="moneris_transaction_date" attrs="{'invisible': [('provider', '!=', 'moneris')]}"/>
+                                    <field name="moneris_transaction_id" attrs="{'invisible': [('provider', '!=', 'moneris')]}"/>
+                                    <field name="moneris_payment_type" attrs="{'invisible': [('provider', '!=', 'moneris')]}"/>
+                                    <field name="moneris_reference_no" attrs="{'invisible': [('provider', '!=', 'moneris')]}"/>
+                                </group>   
+                            </group>
+                        </page>
+                    </notebook>
+                </xpath>
+            </field>
+        </record>
+
+    </data>
+</odoo>

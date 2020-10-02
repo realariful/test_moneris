@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data >
+
+        <template id="moneris_form">
+            <div>
+                <input type="hidden" name="data_set" t-att-data-action-url="tx_url" data-remove-me=""/>
+                <input type="hidden" name="ps_store_id" t-att-value="acquirer.moneris_psstore_id"/>
+                <input type="hidden" name="hpp_key" t-att-value="acquirer.moneris_hpp_key"/>
+                <input type="hidden" name="charge_total" t-att-value="amount"/>
+                <input type="hidden" name="order_id" t-att-value="item_number"/>
+                <input type="hidden" name="rvaroid" t-att-value="item_number"/>
+                <input type="hidden" name="rvarret" t-att-value='custom'/>
+                <input type="hidden" name="cmd" t-att-value="cmd"/>
+                <input type="hidden" name="business" t-att-value="business"/>
+                <input type="hidden" name="item_name" t-att-value="item_name"/>
+                <input type="hidden" name="item_number" t-att-value="item_number"/>
+                <!-- Chnaged line here for 2dp -->
+                <input type="hidden" name="amount" t-att-value="'{:.2f}'.format(amount) or '0.0'"/>
+                <input type="hidden" name="handling" t-att-value="handling"/>
+                <input type="hidden" name="currency_code" t-att-value="currency_code"/>
+                <!-- Item Details -->
+                <t t-foreach="order_lines" t-as="line">
+                    <input type="hidden"  t-attf-name="id{{line['name']}}" t-att-value="line['id']"/>
+                    <input type="hidden"  t-attf-name="description{{line['name']}}" t-att-value="line['description']"/>
+                    <input type="hidden" t-attf-name="quantity{{line['name']}}" t-att-value="line['quantity']"/>
+                    <input type="hidden"  t-attf-name="price{{line['name']}}" t-att-value="line['price']"/>
+                    <input type="hidden"  t-attf-name="subtotal{{line['name']}}" t-att-value="line['subtotal']"/>     
+                </t>
+
+                <input type="hidden" name="cust_id" t-att-value="cust_id"/>
+                <!-- <input type="hidden" name="order_id" t-att-value="item_number"/> -->
+                <!-- <input type="hidden" name="lang" t-att-value="lang"/> -->
+                <t t-if="gst !=0.0"><input type="hidden" name="gst" t-att-value="gst"/></t>
+                <t t-if="pst !=0.0"><input type="hidden" name="pst" t-att-value="pst"/></t>           
+                <t t-if="hst !=0.0"><input type="hidden" name="hst" t-att-value="hst"/></t>                    
+                <t t-if="shipping_cost !=0.0"><input type="hidden" name="shipping_cost" t-att-value="shipping_cost"/></t>                 
+                <input type="hidden" name="note" t-att-value="note"/>
+                <input type="hidden" name="email" t-att-value="email"/>
+                <!-- <input type="hidden" name="eci" t-att-value="eci"/> -->
+                <!--partner / address data -->
+                <!--<input type="hidden" name="address1" t-att-value="address1"/>-->
+                <!--<input type="hidden" name="city" t-att-value="city"/>-->
+                <!--<input type="hidden" name="country" t-att-value="country"/>-->
+                <!--<input type="hidden" name="email" t-att-value="email"/>-->
+                <!--<input type="hidden" name="first_name" t-att-value="first_name"/>-->
+                <!--<input type="hidden" name="last_name" t-att-value="last_name"/>-->
+                <!--<input type="hidden" name="zip" t-att-value="zip"/>-->
+                 <!--URLs -->
+                <!--<input t-if="moneris_return" type='hidden' name='return'-->
+                    <!--t-att-value="moneris_return"/>-->
+                <!--<input t-if="acquirer.moneris_use_ipn" type='hidden' name='notify_url'-->
+                    <!--t-att-value="notify_url"/>-->
+                <!--<input t-if="cancel_return" type="hidden" name="cancel_return"-->
+                    <!--t-att-value="cancel_return"/>-->
+            </div>
+        </template>
+
+    </data>
+</odoo>
