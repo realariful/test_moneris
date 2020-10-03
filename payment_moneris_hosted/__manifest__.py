@@ -2,7 +2,7 @@
 
 {
     'name': 'Moneris Payment Acquirer (Hosted)',
-    'version': '13.0.1.0.1',
+    'version': '13.0.1.0.3',
     'category': 'Extra Tools',
     'summary': 'Payment Acquirer: Moneris Implementation (Hosted)',
     'description': """Moneris Payment Acquirer (Hosted)""",
