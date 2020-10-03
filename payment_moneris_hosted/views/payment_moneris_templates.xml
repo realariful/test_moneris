@@ -37,6 +37,8 @@
                 <t t-if="shipping_cost !=0.0"><input type="hidden" name="shipping_cost" t-att-value="shipping_cost"/></t>                 
                 <input type="hidden" name="note" t-att-value="note"/>
                 <input type="hidden" name="email" t-att-value="email"/>
+                
+                
                 <!-- <input type="hidden" name="eci" t-att-value="eci"/> -->
                 <!--partner / address data -->
                 <!--<input type="hidden" name="address1" t-att-value="address1"/>-->
@@ -53,6 +55,34 @@
                     <!--t-att-value="notify_url"/>-->
                 <!--<input t-if="cancel_return" type="hidden" name="cancel_return"-->
                     <!--t-att-value="cancel_return"/>-->
+ 
+ 
+                    <!-- Billing Address -->
+                        <!-- <input type="hidden" name="bill_first_name" t-att-value="billing_partner_name"/>
+                        <input type="hidden" name="bill_last_name" t-att-value="billing_partner_last_name"/>
+                        <input type="hidden" name="bill_company_name" t-att-value="billing_partner_commercial_company_name"/>
+                        <input type="hidden" name="bill_address_one" t-att-value="billing_partner_address"/>
+                        <input type="hidden" name="bill_city" t-att-value="billing_partner_city"/>
+                        <input type="hidden" name="bill_state_or_province" t-att-value="bill_state_or_province"/>
+                        <input type="hidden" name="bill_postal_code" t-att-value="billing_partner_zip"/>
+                        <input type="hidden" name="bill_country" t-att-value="bill_country"/>
+                        <input type="hidden" name="bill_phone" t-att-value="billing_partner_phone"/> -->
+                       
+                    <!-- Shipping Address -->
+
+                        <!-- <input type="hidden" name="ship_first_name" t-att-value="ship_first_name"/>
+                        <input type="hidden" name="ship_last_name" t-att-value="ship_last_name"/>
+                        <input type="hidden" name="ship_company_name" t-att-value="ship_company_name"/>
+
+                        <input type="hidden" name="ship_address_one" t-att-value="ship_address_one"/>
+                        <input type="hidden" name="ship_city" t-att-value="ship_city"/>
+                        <input type="hidden" name="ship_state_or_province" t-att-value="ship_state_or_province"/>
+                        <input type="hidden" name="ship_postal_code" t-att-value="ship_postal_code"/>
+                        <input type="hidden" name="ship_country" t-att-value="ship_country"/>
+                        <input type="hidden" name="ship_phone" t-att-value="ship_phone"/> -->
+                        <!-- <input type="hidden" name="ship_fax" t-att-value="333-555-6666"/> -->
+                    
+
             </div>
         </template>
 

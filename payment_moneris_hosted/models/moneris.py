@@ -1,19 +1,19 @@
 # -*- coding: utf-'8' "-*-"
 
 import base64
-
 import logging
 from urllib.parse import urljoin
 import werkzeug
 from werkzeug import urls
 import urllib.request
 import json
-
+# import re
+import xmltodict
 from odoo import api, fields, models, _
 from odoo.addons.payment.models.payment_acquirer import ValidationError
 from odoo.addons.payment_moneris_hosted.controllers.main import MonerisController
 from odoo.tools.float_utils import float_compare
-
+from odoo.http import request
 _logger = logging.getLogger(__name__)
 
 
@@ -69,6 +69,12 @@ class AcquirerMoneris(models.Model):
 
     def moneris_compute_fees(self, amount, currency_id, country_id):
         _logger.info("moneris_compute_fees-->")
+        try:
+            _logger.info("Session-------->")
+            _logger.info(request.session)
+        except Exception as e:
+            print(str(e.args))
+
         if not self.fees_active:
             return 0.0
         country = self.env['res.country'].browse(country_id)
@@ -85,8 +91,8 @@ class AcquirerMoneris(models.Model):
     def moneris_form_generate_values(self, values):
         _logger.info("moneris_form_generate_values-->")
         base_url = self.env['ir.config_parameter'].sudo().get_param('web.base.url')
-
         moneris_tx_values = dict(values)
+        _logger.info(moneris_tx_values)
         moneris_tx_values.update({
             'cmd': '_xclick',
             'business': self.moneris_psstore_id,
@@ -144,14 +150,40 @@ class AcquirerMoneris(models.Model):
         moneris_tx_values['shipping_cost'] = 0.0
         moneris_tx_values['note'] = ''
         moneris_tx_values['email'] = values.get('billing_partner_email')
+        #------------------------------------------------------------------------------------------
+        # Billing Address Update
+        # state_id = values.get('billing_partner_state')
+        # country_id = values.get('billing_partner_country')
+        # moneris_tx_values['bill_state_or_province'] = state_id.code if state_id != False else ""
+        # moneris_tx_values['bill_country'] = country_id.name if country_id != False else ""
+
+        # # Shipping Address Update
+        # shipper = self.env['res.partner'].sudo().search([('id','=',values.get('billing_partner_id'))])
+        # state = values.get('billing_partner_state')#int(re.search(r'\d+', values.get('billing_partner_state'))).group()
+        # country = values.get('billing_partner_country')#int(re.search(r'\d+', values.get('billing_partner_country_id'))).group()
+        # state_id = values.get('billing_partner_state')#self.env['res.state'].sudo().search([('id','=', state )])
+        # country_id = values.get('billing_partner_country')#self.env['res.country'].sudo().search([('id','=', country )])
+
+        # if 'reference' in values:
+        #     order_id = self.env['sale.order'].sudo().search([('name','=',values['reference'].split("-")[0])])
+        #     moneris_tx_values['ship_first_name'] = order_id.partner_shipping_id.name.split(" ")[0] or ""
+        #     moneris_tx_values['ship_last_name'] = order_id.partner_shipping_id.name.split(" ")[1] if len(order_id.partner_shipping_id.name.split(" ")) > 1 else "" or ""
+        #     moneris_tx_values['ship_company_name'] = order_id.partner_shipping_id.company_name or ""
+        #     street = order_id.partner_shipping_id.street if order_id.partner_shipping_id.street != False else "" or ""
+        #     street = street + order_id.partner_shipping_id.street2 if order_id.partner_shipping_id.street2 != False else street
+        #     moneris_tx_values['ship_address_one'] = street or ""
+        #     moneris_tx_values['ship_city'] = order_id.partner_shipping_id.city if order_id.partner_shipping_id.street2 != False else "" or ""
+        #     moneris_tx_values['ship_state_or_province'] = order_id.partner_shipping_id.state_id.code if order_id.partner_shipping_id.state_id != False else "" or ""
+        #     moneris_tx_values['ship_country'] = order_id.partner_shipping_id.country_id.name if order_id.partner_shipping_id.country_id != False else "" or ""
+        #     moneris_tx_values['ship_phone'] = order_id.partner_shipping_id.phone or ""
+        #     # moneris_tx_values['ship_fax'] = order_id.partner_shipping_id.phone
+        # #----------------------------------------------------------------------------------------------
         return moneris_tx_values
 
     def moneris_get_form_action_url(self):
         self.ensure_one()
         _logger.info("moneris_get_form_action_url--->")
         _logger.info("State-->" + str(self.state))
-        # environment = 'prod' if self.state == 'enabled' else 'test'
-        # _logger.info(environment)
         moneris_form_url = self._get_moneris_urls(self.state)['moneris_form_url']
         _logger.info("moneris_form_url-------->")
         _logger.info(moneris_form_url)
@@ -172,14 +204,23 @@ class TxMoneris(models.Model):
     moneris_transaction_id = fields.Char('Transaction ID')
     moneris_payment_type = fields.Char('Payment Type')
     moneris_reference_no = fields.Char('Reference Number')
-    moneris_txn_type = fields.Char('Transaction Type')
-    
     moneris_bank_approval = fields.Char('Bank Approval')
     moneris_card_holder = fields.Char('Cardholder')
     moneris_order_id = fields.Char('Response Order Id')
     moneris_iso_code = fields.Char('Iso Code')
     moneris_transaction_key = fields.Char('Transaction Key')
     moneris_transaction_no = fields.Char('Transaction Number')
+
+    moneris_card_type = fields.Selection(
+        string='Moneris Card Type',
+        selection=[('card', 'Card'), ('gift', 'Gift Card'),  ('loyalty', 'Loyalty Card'),
+        ], default="card",
+    )
+    # moneris_card_description = fields.Char()
+    # moneris_gift_charge = fields.Char("Gift Charge")
+    # moneris_rem_balance = fields.Char("Remaining Balance")
+    # moneris_gift_display = fields.Char("Gift Display")
+    # moneris_voucher_text = fields.Char("Voucher Text")
 
     # --------------------------------------------------
     # FORM RELATED METHODS
@@ -189,7 +230,9 @@ class TxMoneris(models.Model):
     def _moneris_form_get_tx_from_data(self, data):
         _logger.info("_moneris_form_get_tx_from_data-->")
         _logger.info(data)
+        _logger.info(request.session)
         reference, txn_id = data.get('rvaroid'), data.get('txn_num')
+        _logger.info(str(reference) + ","+ str(txn_id))
         if not reference or not txn_id:
             error_msg = _('Moneris: received data with missing reference (%s) or txn_id (%s)') % (reference, txn_id)
             _logger.info(error_msg)
@@ -209,6 +252,7 @@ class TxMoneris(models.Model):
         return txs[0]
 
     def _moneris_form_get_invalid_parameters(self,  data):
+        _logger.info(request.session)
         invalid_parameters = []
         """
         if data.get('notify_version')[0] != '3.4':
@@ -250,29 +294,36 @@ class TxMoneris(models.Model):
         return invalid_parameters
 
     def _moneris_form_validate(self, data):
+        _logger.info("_moneris_form_validate")
+        _logger.info(request.session)
         _logger.info(data)
         status = data.get('result')
         _logger.info("-----------------form -----validate----------------------")
         if status == '1':
             _logger.info('Validated Moneris payment for tx %s: set as done' % (self.reference))
-            data.update(state='done', date_validate=data.get('date_stamp', fields.datetime.now()))
+            _logger.info(data.get('date_stamp'))
+            date_time = data.get('date_stamp') + ' ' + data.get('time_stamp')
+            _logger.info(date_time)
+            data.update(state='done', date_validate=data.get(date_time, fields.datetime.now()))
             _logger.info("---form validate----------------------")
             tranrec = self._moneris_convert_transaction(data)
+            _logger.info(str("Transaction----->"))
             _logger.info(tranrec)
-            response = self.sudo().write(tranrec)
+            response = self.write(tranrec)
             _logger.info(response)
             return response
         else:
             error = 'Received unrecognized status for Moneris payment %s: %s, set as error' % (self.reference, status)
             _logger.info(error)
             data.update(state='error', state_message=error)
-            response = self.sudo().write(data)
+            response = self.write(data)
             return response
         _logger.info("_moneris_form_validate-->" + str(response))
 
     def _moneris_convert_transaction(self, data):
         _logger.info("_moneris_convert_transaction")
         _logger.info(str(data))
+        _logger.info(request.session)
         try:
             transaction = {}
             transaction['acquirer_reference'] = data['bank_transaction_id']
@@ -292,7 +343,7 @@ class TxMoneris(models.Model):
             transaction['moneris_credit_card'] = data['f4l4'] if 'f4l4' in data else ''
             transaction['moneris_expiry_date'] = data['expiry_date'] if 'expiry_date' in data else ''
             transaction['moneris_transaction_time'] = data['time_stamp'] if 'time_stamp' in data else ''
-            transaction['moneris_transaction_date'] = data['date_validate'] if 'date_validate' in data else ''
+            transaction['moneris_transaction_date'] = data['date_stamp'] if 'date_stamp' in data else ''
             transaction['moneris_transaction_id'] = data['txn_num'] if 'txn_num' in data else ''
             transaction['moneris_payment_type'] = data['trans_name'] if 'trans_name' in data else ''
             transaction['moneris_reference_no'] = data['moneris_reference_no'] if 'moneris_reference_no' in data else ''
@@ -304,39 +355,17 @@ class TxMoneris(models.Model):
             transaction['moneris_transaction_key'] = data['transactionKey'] if 'transactionKey' in data else ''
             transaction['moneris_transaction_no'] = data['txn_num'] if 'txn_num' in data else ''
             # Payment Token is not saved
-            _logger.info(str("Transaction"))
-            _logger.info(str(transaction))
+
+            if 'gift_card' in transaction:
+                transaction['moneris_card_type'] = 'gift'
+                transaction['moneris_card_description'] = data['gift_card'].get('card_desc') if 'card_desc' in data['gift_card'] else ''
+                transaction['moneris_gift_charge'] = data['gift_card'].get('gift_charge_total') if 'gift_charge_total' in data['gift_card'] else ''
+                transaction['moneris_rem_balance'] = data['gift_card'].get('rem_balance') if 'rem_balance' in data['gift_card'] else ''
+                transaction['moneris_gift_display'] = data['gift_card'].get('display_text') if 'display_text' in data['gift_card'] else ''
+                transaction['moneris_voucher_text'] = data['gift_card'].get('voucher_text') if 'voucher_text' in data['gift_card'] else ''
+            else:
+                transaction['moneris_card_type'] = 'card'
+
             return transaction
         except Exception as e:
             return {'error':str(e.args)}
-
-    # # --------------------------------------------------
-    # # SERVER2SERVER RELATED METHODS
-    # # --------------------------------------------------
-
-    # def _moneris_try_url(self, request, tries=3, context=None):
-    #     """ Try to contact Moneris. Due to some issues, internal service errors
-    #     seem to be quite frequent. Several tries are done before considering
-    #     the communication as failed.
-    #      .. versionadded:: pre-v8 saas-3
-    #      .. warning::
-    #         Experimental code. You should not use it before OpenERP v8 official
-    #         release.
-    #     """
-    #     done, res = False, None
-    #     while (not done and tries):
-    #         try:
-    #             res = urllib.request.urlopen(request)
-    #             done = True
-    #         except urllib.request.HTTPError as e:
-    #             res = e.read()
-    #             e.close()
-    #             if tries and res and json.loads(res)['name'] == 'INTERNAL_SERVICE_ERROR':
-    #                 _logger.warning('Failed contacting Moneris, retrying (%s remaining)' % tries)
-    #         tries = tries - 1
-    #     if not res:
-    #         pass
-    #         # raise openerp.exceptions.
-    #     result = res.read()
-    #     res.close()
-    #     return result

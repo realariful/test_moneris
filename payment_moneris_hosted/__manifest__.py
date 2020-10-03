@@ -2,7 +2,7 @@
 
 {
     'name': 'Moneris Payment Acquirer (Hosted)',
-    'version': '13.0.1.0.0',
+    'version': '13.0.1.0.1',
     'category': 'Extra Tools',
     'summary': 'Payment Acquirer: Moneris Implementation (Hosted)',
     'description': """Moneris Payment Acquirer (Hosted)""",
@@ -11,6 +11,7 @@
     'company': 'Syncoria Inc.',
     'maintainer': 'Syncoria Inc.',
     'depends': ['payment'],
+    "external_dependencies": {"python": ['xmltodict']},
     'images': [
         'static/description/banner.png',
     ],

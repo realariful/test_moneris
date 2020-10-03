@@ -22,7 +22,7 @@
                 </xpath>
                 <xpath expr='//field[@name="journal_id"]' position='after'>
                         <field name="moneris_order_confirmation" attrs="{'invisible': [('provider', '!=', 'moneris')]}" widget="radio"/>
-                        <field name="save_token" attrs="{'invisible': [('provider', '!=', 'moneris')]}" widget="radio" string="Store Card Data"/>
+                        <!-- <field name="save_token" attrs="{'invisible': [('provider', '!=', 'moneris')]}" widget="radio" string="Store Card Data"/> -->
                         <!-- <field name="moneris_store_card" attrs="{'invisible': [('provider', '!=', 'moneris')]}" widget="radio"/> -->
                         <field name="moneris_image_url" attrs="{'invisible': [('provider', '!=', 'moneris')]}"/>
                         <!-- <field name="moneris_payment_flow" attrs="{'invisible': [('provider', '!=', 'moneris')]}" widget="radio"/> -->
@@ -42,12 +42,15 @@
                         <page string="Moneris Details">
                             <group>
                                 <group>
-                                    <field name="moneris_customer_id" attrs="{'invisible': [('provider', '!=', 'moneris')]}"/>
+                                    <field name="moneris_card_type"/>
+                                    <!-- <field name="moneris_card_description" attrs="{'invisible': [ '|', ('provider', '!=', 'moneris'), ('moneris_card_type', '!=', 'gift')]}"/> -->
+                                    <!-- <field name="moneris_gift_charge" attrs="{'invisible': [ '|', ('provider', '!=', 'moneris'), ('moneris_card_type', '!=', 'gift')]}"/> -->
+                                    <field name="moneris_customer_id" attrs="{'invisible': [('provider', '!=', 'moneris'), ('moneris_card_type', '!=', 'gift')]}"/>
                                     <field name="moneris_receipt_id" attrs="{'invisible': [('provider', '!=', 'moneris')]}"/>
                                     <field name="moneris_response_code" attrs="{'invisible': [('provider', '!=', 'moneris')]}"/>
                                     <field name="moneris_credit_card" attrs="{'invisible': [('provider', '!=', 'moneris')]}"/>
-                                    <field name="moneris_expiry_date" attrs="{'invisible': [('provider', '!=', 'moneris')]}"/>
-                                    <field name="moneris_txn_type" attrs="{'invisible': [('provider', '!=', 'moneris')]}"/>
+                                    <field name="moneris_expiry_date" attrs="{'invisible': [ '|', ('provider', '!=', 'moneris'), ('moneris_card_type', '!=', 'gift')]}"/>
+                                    <field name="moneris_txn_type" attrs="{'invisible': [ '|', ('provider', '!=', 'moneris'), ('moneris_card_type', '!=', 'gift')]}"/>
                                 </group>
                                 <group>
                                     <field name="moneris_transaction_time" attrs="{'invisible': [('provider', '!=', 'moneris')]}"/>
@@ -55,6 +58,9 @@
                                     <field name="moneris_transaction_id" attrs="{'invisible': [('provider', '!=', 'moneris')]}"/>
                                     <field name="moneris_payment_type" attrs="{'invisible': [('provider', '!=', 'moneris')]}"/>
                                     <field name="moneris_reference_no" attrs="{'invisible': [('provider', '!=', 'moneris')]}"/>
+                                    <!-- <field name="moneris_rem_balance" attrs="{'invisible': [ '|', ('provider', '!=', 'moneris'), ('moneris_card_type', '!=', 'gift')]}"/> -->
+                                    <!-- <field name="moneris_gift_display" attrs="{'invisible': [ '|', ('provider', '!=', 'moneris'), ('moneris_card_type', '!=', 'gift')]}"/> -->
+                                    <!-- <field name="moneris_voucher_text" attrs="{'invisible': [ '|', ('provider', '!=', 'moneris'), ('moneris_card_type', '!=', 'gift')]}"/> -->
                                 </group>   
                             </group>
                         </page>
